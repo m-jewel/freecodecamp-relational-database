@@ -1,3 +1,5 @@
+improve the script readability
+
 #!/bin/bash
 
 # Connect to the periodic_table database
@@ -6,22 +8,13 @@ PSQL="psql --username=freecodecamp --dbname=periodic_table -t --no-align -c"
 # Function to fetch element details
 fetch_element_details() {
   local input=$1
-  if [[ $input =~ ^[0-9]+$ ]]; then
-    # If input is a number, search by atomic number
-    local query="SELECT atomic_number, name, symbol, atomic_mass, melting_point_celsius, boiling_point_celsius, type 
-                 FROM elements 
-                 JOIN properties USING(atomic_number) 
-                 JOIN types USING(type_id) 
-                 WHERE atomic_number = $input"
-  else
-    # If input is a string, search by symbol or name
-    local query="SELECT atomic_number, name, symbol, atomic_mass, melting_point_celsius, boiling_point_celsius, type 
-                 FROM elements 
-                 JOIN properties USING(atomic_number) 
-                 JOIN types USING(type_id) 
-                 WHERE symbol = '$input' OR name = '$input'"
-  fi
-  echo "$($PSQL "$query")"
+  local query="SELECT atomic_number, name, symbol, atomic_mass, melting_point_celsius, boiling_point_celsius, type 
+               FROM elements 
+               JOIN properties USING(atomic_number) 
+               JOIN types USING(type_id) 
+               WHERE atomic_number = $1 OR symbol = '$1' OR name = '$1'"
+
+  echo $($PSQL "$query")
 }
 
 if [[ -z $1 ]]; then
