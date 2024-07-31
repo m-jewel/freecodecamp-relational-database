@@ -3,17 +3,36 @@
 # Connect to the periodic_table database
 PSQL="psql --username=freecodecamp --dbname=periodic_table -t --no-align -c"
 
-if [[ -z $1 ]]
-then
+# Function to fetch element details
+fetch_element_details() {
+  local input=$1
+  if [[ $input =~ ^[0-9]+$ ]]; then
+    # If input is a number, search by atomic number
+    local query="SELECT atomic_number, name, symbol, atomic_mass, melting_point_celsius, boiling_point_celsius, type 
+                 FROM elements 
+                 JOIN properties USING(atomic_number) 
+                 JOIN types USING(type_id) 
+                 WHERE atomic_number = $input"
+  else
+    # If input is a string, search by symbol or name
+    local query="SELECT atomic_number, name, symbol, atomic_mass, melting_point_celsius, boiling_point_celsius, type 
+                 FROM elements 
+                 JOIN properties USING(atomic_number) 
+                 JOIN types USING(type_id) 
+                 WHERE symbol = '$input' OR name = '$input'"
+  fi
+  echo "$($PSQL "$query")"
+}
+
+if [[ -z $1 ]]; then
   echo "Please provide an element as an argument."
   exit
 fi
 
 # Fetch element data based on input
-ELEMENT=$($PSQL "SELECT atomic_number, name, symbol, atomic_mass, melting_point_celsius, boiling_point_celsius, type FROM elements JOIN properties USING(atomic_number) JOIN types USING(type_id) WHERE atomic_number=$1 OR symbol='$1' OR name='$1'")
+ELEMENT=$(fetch_element_details "$1")
 
-if [[ -z $ELEMENT ]]
-then
+if [[ -z $ELEMENT ]]; then
   echo "I could not find that element in the database."
   exit
 else
